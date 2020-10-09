@@ -5,38 +5,36 @@ import kotlin.math.*
 
 interface IPointArrayList {
     val size: Int
-    fun getX(index: Int): Double
-    fun getY(index: Int): Double
+    fun getX(index: Int): Float
+    fun getY(index: Int): Float
 }
 
-inline fun IPointArrayList.fastForEach(block: (x: Double, y: Double) -> Unit) {
+inline fun IPointArrayList.fastForEach(block: (x: Float, y: Float) -> Unit) {
     for (n in 0 until size) {
         block(getX(n), getY(n))
     }
 }
 
-fun IPointArrayList.getPoint(index: Int, out: Point = Point()): Point = out.setTo(getX(index), getY(index))
+fun IPointArrayList.getPoint(index: Int, out: Point = Point()): Point = out.apply { setTo(getX(index), getY(index)) }
 fun IPointArrayList.getIPoint(index: Int): IPoint = IPoint(getX(index), getY(index))
 
 fun IPointArrayList.toPoints(): List<Point> = (0 until size).map { getPoint(it) }
 fun IPointArrayList.toIPoints(): List<IPoint> = (0 until size).map { getIPoint(it) }
 
-fun IPointArrayList.contains(x: Float, y: Float): Boolean = contains(x.toDouble(), y.toDouble())
-fun IPointArrayList.contains(x: Int, y: Int): Boolean = contains(x.toDouble(), y.toDouble())
-fun IPointArrayList.contains(x: Double, y: Double): Boolean {
+fun IPointArrayList.contains(x: Float, y: Float): Boolean {
     for (n in 0 until size) if (getX(n) == x && getY(n) == y) return true
     return false
 }
 
 class PointArrayList(capacity: Int = 7) : IPointArrayList {
-    private val xList = DoubleArrayList(capacity)
-    private val yList = DoubleArrayList(capacity)
+    private val xList = FloatArrayList(capacity)
+    private val yList = FloatArrayList(capacity)
     override val size get() = xList.size
 
     fun isEmpty() = size == 0
     fun isNotEmpty() = size != 0
 
-    fun clear() = this.apply {
+    fun clear() = apply {
         xList.clear()
         yList.clear()
     }
@@ -51,12 +49,10 @@ class PointArrayList(capacity: Int = 7) : IPointArrayList {
         }
     }
 
-    fun add(x: Double, y: Double) = this.apply {
+    fun add(x: Float, y: Float) = apply {
         xList += x
         yList += y
     }
-    fun add(x: Float, y: Float) = add(x.toDouble(), y.toDouble())
-    fun add(x: Int, y: Int) = add(x.toDouble(), y.toDouble())
 
     fun add(p: Point) = add(p.x, p.y)
     fun add(p: IPoint) = add(p.x, p.y)
@@ -74,39 +70,32 @@ class PointArrayList(capacity: Int = 7) : IPointArrayList {
     override fun getX(index: Int) = xList.getAt(index)
     override fun getY(index: Int) = yList.getAt(index)
 
-    fun insertAt(index: Int, p: PointArrayList) = this.apply {
+    fun insertAt(index: Int, p: PointArrayList) = apply {
         val size = p.size
         xList.insertAt(index, p.xList.data, 0, size)
         yList.insertAt(index, p.yList.data, 0, size)
     }
 
-    fun insertAt(index: Int, x: Double, y: Double) = this.apply {
+    fun insertAt(index: Int, x: Float, y: Float) = apply {
         xList.insertAt(index, x)
         yList.insertAt(index, y)
     }
 
     fun insertAt(index: Int, point: IPoint) = insertAt(index, point.x, point.y)
 
-    fun removeAt(index: Int, count: Int = 1) = this.apply {
+    fun removeAt(index: Int, count: Int = 1) = apply {
         xList.removeAt(index, count)
         yList.removeAt(index, count)
     }
 
-    fun setX(index: Int, x: Double) { xList[index] = x }
-    fun setX(index: Int, x: Int) = setX(index, x.toDouble())
-    fun setX(index: Int, x: Float) = setX(index, x.toDouble())
+    fun setX(index: Int, x: Float) { xList[index] = x }
 
-    fun setY(index: Int, y: Double) { yList[index] = y }
-    fun setY(index: Int, y: Int) = setY(index, y.toDouble())
-    fun setY(index: Int, y: Float) = setY(index, y.toDouble())
+    fun setY(index: Int, y: Float) { yList[index] = y }
 
-    fun setXY(index: Int, x: Double, y: Double) {
+    fun setXY(index: Int, x: Float, y: Float) {
         xList[index] = x
         yList[index] = y
     }
-    fun setXY(index: Int, x: Int, y: Int) = setXY(index, x.toDouble(), y.toDouble())
-    fun setXY(index: Int, x: Float, y: Float) = setXY(index, x.toDouble(), y.toDouble())
-
     fun transform(matrix: Matrix) {
         for (n in 0 until size) {
             val x = getX(n)
@@ -162,7 +151,7 @@ interface IPointIntArrayList {
     fun getY(index: Int): Int
 }
 
-fun IPointIntArrayList.getPoint(index: Int, out: PointInt = PointInt()): PointInt = out.setTo(getX(index), getY(index))
+fun IPointIntArrayList.getPoint(index: Int, out: PointInt = PointInt()): PointInt = out.apply { setTo(getX(index), getY(index)) }
 fun IPointIntArrayList.getIPoint(index: Int): IPointInt = IPointInt(getX(index), getY(index))
 fun IPointIntArrayList.toPoints(): List<PointInt> = (0 until size).map { getPoint(it) }
 fun IPointIntArrayList.toIPoints(): List<IPointInt> = (0 until size).map { getIPoint(it) }

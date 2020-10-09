@@ -28,7 +28,7 @@ class AStar(val width: Int, val height: Int, val isBlocking: (x: Int, y: Int) ->
         val first = getNode(x0, y0)
         val dest = getNode(x1, y1)
         var closest = first
-        var closestDist = Point.distance(x0, y0, x1, y1)
+        var closestDist = Point.distance(x0.toFloat(), y0.toFloat(), x1.toFloat(), y1.toFloat())
         if (!first.value) {
             queue.add(first.index)
             first.weight = 0
@@ -36,7 +36,7 @@ class AStar(val width: Int, val height: Int, val isBlocking: (x: Int, y: Int) ->
 
         while (queue.isNotEmpty()) {
             val last = AStarNode(queue.removeHead())
-            val dist = Point.distance(last.posX, last.posY, dest.posX, dest.posY)
+            val dist = Point.distance(last.posX.toFloat(), last.posY.toFloat(), dest.posX.toFloat(), dest.posY.toFloat())
             if (dist < closestDist) {
                 closestDist = dist
                 closest = last

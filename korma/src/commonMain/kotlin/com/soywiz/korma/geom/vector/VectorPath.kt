@@ -17,12 +17,12 @@ private val identityMatrix: Matrix = Matrix()
 
 open class VectorPath(
     val commands: IntArrayList = IntArrayList(),
-    val data: DoubleArrayList = DoubleArrayList(),
+    val data: FloatArrayList = FloatArrayList(),
     var winding: Winding = Winding.EVEN_ODD
 ) : VectorBuilder {
     var version: Int = 0
 
-    open fun clone(): VectorPath = VectorPath(IntArrayList(commands), DoubleArrayList(data), winding)
+    open fun clone(): VectorPath = VectorPath(IntArrayList(commands), FloatArrayList(data), winding)
 
     companion object {
         private val identityMatrix = Matrix()
@@ -37,17 +37,17 @@ open class VectorPath(
 
     interface Visitor {
         fun close()
-        fun moveTo(x: Double, y: Double)
-        fun lineTo(x: Double, y: Double)
-        fun quadTo(cx: Double, cy: Double, ax: Double, ay: Double)
-        fun cubicTo(cx1: Double, cy1: Double, cx2: Double, cy2: Double, ax: Double, ay: Double)
+        fun moveTo(x: Float, y: Float)
+        fun lineTo(x: Float, y: Float)
+        fun quadTo(cx: Float, cy: Float, ax: Float, ay: Float)
+        fun cubicTo(cx1: Float, cy1: Float, cx2: Float, cy2: Float, ax: Float, ay: Float)
     }
 
     inline fun visitCmds(
-        moveTo: (x: Double, y: Double) -> Unit,
-        lineTo: (x: Double, y: Double) -> Unit,
-        quadTo: (x1: Double, y1: Double, x2: Double, y2: Double) -> Unit,
-        cubicTo: (x1: Double, y1: Double, x2: Double, y2: Double, x3: Double, y3: Double) -> Unit,
+        moveTo: (x: Float, y: Float) -> Unit,
+        lineTo: (x: Float, y: Float) -> Unit,
+        quadTo: (x1: Float, y1: Float, x2: Float, y2: Float) -> Unit,
+        cubicTo: (x1: Float, y1: Float, x2: Float, y2: Float, x3: Float, y3: Float) -> Unit,
         close: () -> Unit
     ) {
         var n = 0
@@ -87,15 +87,15 @@ open class VectorPath(
     }
 
     inline fun visitEdges(
-        line: (x0: Double, y0: Double, x1: Double, y1: Double) -> Unit,
-        quad: (x0: Double, y0: Double, x1: Double, y1: Double, x2: Double, y2: Double) -> Unit,
-        cubic: (x0: Double, y0: Double, x1: Double, y1: Double, x2: Double, y2: Double, x3: Double, y3: Double) -> Unit,
+        line: (x0: Float, y0: Float, x1: Float, y1: Float) -> Unit,
+        quad: (x0: Float, y0: Float, x1: Float, y1: Float, x2: Float, y2: Float) -> Unit,
+        cubic: (x0: Float, y0: Float, x1: Float, y1: Float, x2: Float, y2: Float, x3: Float, y3: Float) -> Unit,
         close: () -> Unit
     ) {
-        var mx = 0.0
-        var my = 0.0
-        var lx = 0.0
-        var ly = 0.0
+        var mx = 0f
+        var my = 0f
+        var lx = 0f
+        var ly = 0f
         visitCmds(
             moveTo = { x, y ->
                 mx = x; my = y
@@ -135,8 +135,8 @@ open class VectorPath(
     fun clear() {
         commands.clear()
         data.clear()
-        lastX = 0.0
-        lastY = 0.0
+        lastX = 0f
+        lastY = 0f
         version = 0
         scanline.version = version - 1  // ensure scanline will be updated after this "clear" operation
     }
@@ -154,10 +154,10 @@ open class VectorPath(
         version++
     }
 
-    override var lastX = 0.0
-    override var lastY = 0.0
+    override var lastX = 0f
+    override var lastY = 0f
 
-    override fun moveTo(x: Double, y: Double) {
+    override fun moveTo(x: Float, y: Float) {
         commands += Command.MOVE_TO
         data += x
         data += y
@@ -166,7 +166,7 @@ open class VectorPath(
         version++
     }
 
-    override fun lineTo(x: Double, y: Double) {
+    override fun lineTo(x: Float, y: Float) {
         ensureMoveTo(x, y)
         commands += Command.LINE_TO
         data += x
@@ -176,7 +176,7 @@ open class VectorPath(
         version++
     }
 
-    override fun quadTo(cx: Double, cy: Double, ax: Double, ay: Double) {
+    override fun quadTo(cx: Float, cy: Float, ax: Float, ay: Float) {
         ensureMoveTo(cx, cy)
         commands += Command.QUAD_TO
         data += cx
@@ -188,7 +188,7 @@ open class VectorPath(
         version++
     }
 
-    override fun cubicTo(cx1: Double, cy1: Double, cx2: Double, cy2: Double, ax: Double, ay: Double) {
+    override fun cubicTo(cx1: Float, cy1: Float, cx2: Float, cy2: Float, ax: Float, ay: Float) {
         ensureMoveTo(cx1, cy1)
         commands += Command.CUBIC_TO
         data += cx1
@@ -209,7 +209,7 @@ open class VectorPath(
 
     override val totalPoints: Int get() = data.size / 2
 
-    private fun ensureMoveTo(x: Double, y: Double) {
+    private fun ensureMoveTo(x: Float, y: Float) {
         if (isEmpty()) moveTo(x, y)
     }
 
@@ -378,8 +378,8 @@ fun VectorBuilder.write(path: VectorPath) {
 
 fun BoundsBuilder.add(path: VectorPath, transform: Matrix) {
     val bb = this
-    var lx = 0.0
-    var ly = 0.0
+    var lx = 0f
+    var ly = 0f
 
     path.visitCmds(
         moveTo = { x, y -> bb.add(x, y, transform).also { lx = x }.also { ly = y } },
@@ -398,8 +398,8 @@ fun BoundsBuilder.add(path: VectorPath, transform: Matrix) {
 
 fun BoundsBuilder.add(path: VectorPath) {
     val bb = this
-    var lx = 0.0
-    var ly = 0.0
+    var lx = 0f
+    var ly = 0f
 
     path.visitCmds(
         moveTo = { x, y -> bb.add(x, y).also { lx = x }.also { ly = y } },
@@ -417,7 +417,7 @@ fun BoundsBuilder.add(path: VectorPath) {
 }
 
 fun VectorPath.applyTransform(m: Matrix): VectorPath {
-    for (n in 0 until data.size step 2) {
+    for (n in data.indices step 2) {
         val x = data.getAt(n + 0)
         val y = data.getAt(n + 1)
         data[n + 0] = m.transformX(x, y)

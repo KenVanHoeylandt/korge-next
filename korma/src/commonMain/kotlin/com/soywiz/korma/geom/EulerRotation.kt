@@ -1,24 +1,25 @@
 package com.soywiz.korma.geom
 
 data class EulerRotation(
-    var x: Angle = 0.degrees,
-    var y: Angle = 0.degrees,
-    var z: Angle = 0.degrees
+    var x: Angle = 0f.degrees,
+    var y: Angle = 0f.degrees,
+    var z: Angle = 0f.degrees
 ) {
     companion object {
         fun toQuaternion(roll: Angle, pitch: Angle, yaw: Angle, out: Quaternion = Quaternion()): Quaternion {
-            val cr = cos(roll * 0.5)
-            val sr = sin(roll * 0.5)
-            val cp = cos(pitch * 0.5)
-            val sp = sin(pitch * 0.5)
-            val cy = cos(yaw * 0.5)
-            val sy = sin(yaw * 0.5)
-            return out.setTo(
+            val cr = cos(roll * 0.5f)
+            val sr = sin(roll * 0.5f)
+            val cp = cos(pitch * 0.5f)
+            val sp = sin(pitch * 0.5f)
+            val cy = cos(yaw * 0.5f)
+            val sy = sin(yaw * 0.5f)
+            out.setTo(
                 (cy * cp * sr - sy * sp * cr),
                 (sy * cp * sr + cy * sp * cr),
                 (sy * cp * cr - cy * sp * sr),
                 (cy * cp * cr + sy * sp * sr)
             )
+            return out
         }
         fun toQuaternion(euler: EulerRotation, out: Quaternion = Quaternion()): Quaternion = toQuaternion(euler.x, euler.y, euler.z, out)
     }

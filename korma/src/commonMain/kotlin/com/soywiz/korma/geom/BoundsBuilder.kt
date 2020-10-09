@@ -4,8 +4,8 @@ class BoundsBuilder {
     val tempRect = Rectangle()
 
     companion object {
-        private val MIN = Double.NEGATIVE_INFINITY
-        private val MAX = Double.POSITIVE_INFINITY
+        private val MIN = Float.NEGATIVE_INFINITY
+        private val MAX = Float.POSITIVE_INFINITY
     }
 
     var npoints = 0; private set
@@ -25,7 +25,7 @@ class BoundsBuilder {
         npoints = 0
     }
 
-    fun add(x: Double, y: Double): BoundsBuilder {
+    fun add(x: Float, y: Float): BoundsBuilder {
         if (x < xmin) xmin = x
         if (x > xmax) xmax = x
         if (y < ymin) ymin = y
@@ -35,12 +35,7 @@ class BoundsBuilder {
         return this
     }
 
-    fun add(x: Int, y: Int): BoundsBuilder = add(x.toDouble(), y.toDouble())
-    fun add(x: Float, y: Float): BoundsBuilder = add(x.toDouble(), y.toDouble())
-
-    fun add(x: Double, y: Double, transform: Matrix): BoundsBuilder = add(transform.transformX(x, y), transform.transformY(x, y))
-    fun add(x: Int, y: Int, transform: Matrix): BoundsBuilder = add(x.toDouble(), y.toDouble(), transform)
-    fun add(x: Float, y: Float, transform: Matrix): BoundsBuilder = add(x.toDouble(), y.toDouble(), transform)
+    fun add(x: Float, y: Float, transform: Matrix): BoundsBuilder = add(transform.transformX(x, y), transform.transformY(x, y))
 
     fun add(point: IPoint): BoundsBuilder = add(point.x, point.y)
     fun add(point: IPoint, transform: Matrix): BoundsBuilder = add(point.x, point.y, transform)
@@ -77,11 +72,11 @@ class BoundsBuilder {
         return this
     }
 
-    fun getBoundsOrNull(out: Rectangle = Rectangle()): Rectangle? = if (npoints == 0) null else out.setBounds(xmin, ymin, xmax, ymax)
+    fun getBoundsOrNull(out: Rectangle = Rectangle()): Rectangle? = if (npoints == 0) null else out.apply { setBounds(xmin, ymin, xmax, ymax) }
 
     fun getBounds(out: Rectangle = Rectangle()): Rectangle {
         if (getBoundsOrNull(out) == null) {
-            out.setBounds(0, 0, 0, 0)
+            out.setBounds(0f, 0f, 0f, 0f)
         }
         return out
     }

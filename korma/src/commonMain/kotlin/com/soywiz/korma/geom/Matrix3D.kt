@@ -166,7 +166,7 @@ class Matrix3D {
     fun setRow(row: Int, a: Double, b: Double, c: Double, d: Double): Matrix3D = setRow(row, a.toFloat(), b.toFloat(), c.toFloat(), d.toFloat())
     fun setRow(row: Int, a: Int, b: Int, c: Int, d: Int): Matrix3D = setRow(row, a.toFloat(), b.toFloat(), c.toFloat(), d.toFloat())
     fun setRow(row: Int, data: FloatArray): Matrix3D = setRow(row, data[0], data[1], data[2], data[3])
-    fun setRow(row: Int, data: Vector3D): Matrix3D = setRow(row, data.x, data.y, data.w, data.z)
+    fun setRow(row: Int, data: Vector3D): Matrix3D = setRow(row, data.x, data.y, 1f, data.z)
 
     fun setColumn(column: Int, a: Float, b: Float, c: Float, d: Float): Matrix3D {
         data[columnMajorIndex(0, column)] = a
@@ -178,7 +178,7 @@ class Matrix3D {
     fun setColumn(column: Int, a: Double, b: Double, c: Double, d: Double): Matrix3D = setColumn(column, a.toFloat(), b.toFloat(), c.toFloat(), d.toFloat())
     fun setColumn(column: Int, a: Int, b: Int, c: Int, d: Int): Matrix3D = setColumn(column, a.toFloat(), b.toFloat(), c.toFloat(), d.toFloat())
     fun setColumn(column: Int, data: FloatArray): Matrix3D = setColumn(column, data[0], data[1], data[2], data[3])
-    fun setColumn(column: Int, data: Vector3D): Matrix3D = setColumn(column, data.x, data.y, data.w, data.z)
+    fun setColumn(column: Int, data: Vector3D): Matrix3D = setColumn(column, data.x, data.y, 1f, data.z)
 
     fun getRow(n: Int, target: FloatArray = FloatArray(4)): FloatArray {
         val m = n * 4
@@ -406,21 +406,27 @@ class Matrix3D {
         return this
     }
 
-    fun transform0(x: Float, y: Float, z: Float, w: Float = 1f): Float = (v00 * x) + (v01 * y) + (v02 * z) + (v03 * w)
-    fun transform1(x: Float, y: Float, z: Float, w: Float = 1f): Float = (v10 * x) + (v11 * y) + (v12 * z) + (v13 * w)
-    fun transform2(x: Float, y: Float, z: Float, w: Float = 1f): Float = (v20 * x) + (v21 * y) + (v22 * z) + (v23 * w)
-    fun transform3(x: Float, y: Float, z: Float, w: Float = 1f): Float = (v30 * x) + (v31 * y) + (v32 * z) + (v33 * w)
+    private fun transform0(x: Float, y: Float, z: Float, w: Float = 1f): Float = (v00 * x) + (v01 * y) + (v02 * z) + (v03 * w)
+    private fun transform1(x: Float, y: Float, z: Float, w: Float = 1f): Float = (v10 * x) + (v11 * y) + (v12 * z) + (v13 * w)
+    private fun transform2(x: Float, y: Float, z: Float, w: Float = 1f): Float = (v20 * x) + (v21 * y) + (v22 * z) + (v23 * w)
+    private fun transform3(x: Float, y: Float, z: Float, w: Float = 1f): Float = (v30 * x) + (v31 * y) + (v32 * z) + (v33 * w)
 
-    fun transform(x: Float, y: Float, z: Float, w: Float = 1f, out: Vector3D = Vector3D(0, 0, 0, 0)): Vector3D = out.setTo(
+    fun transform(x: Float, y: Float, z: Float, w: Float = 1f, out: Vector3D = Vector3D()): Unit = out.setTo(
+        transform0(x, y, z, w),
+        transform1(x, y, z, w),
+        transform2(x, y, z, w)
+    )
+
+    fun transform(x: Float, y: Float, z: Float, w: Float = 1f, out: Quaternion = Quaternion()): Unit = out.setTo(
         transform0(x, y, z, w),
         transform1(x, y, z, w),
         transform2(x, y, z, w),
         transform3(x, y, z, w)
     )
 
-    fun transform(v: Vector3D, out: Vector3D = Vector3D()): Vector3D = transform(v.x, v.y, v.z, v.w, out)
+    fun transform(v: Vector3D, out: Vector3D = Vector3D()): Unit = transform(v.x, v.y, v.z, 1f, out)
 
-    fun setToOrtho(left: Float, right: Float, bottom: Float, top: Float, near: Float = 0f, far: Float = 1f): Matrix3D {
+    fun setToOrtho(left: Float, right: Float, bottom: Float, top: Float, near: Float = 0f, far: Float = 1f): Unit {
         val sx = 2f / (right - left)
         val sy = 2f / (top - bottom)
         val sz = -2f / (far - near)
@@ -429,7 +435,7 @@ class Matrix3D {
         val ty = -(top + bottom) / (top - bottom)
         val tz = -(far + near) / (far - near)
 
-        return setRows(
+        setRows(
             sx, 0f, 0f, tx,
             0f, sy, 0f, ty,
             0f, 0f, sz, tz,
@@ -437,15 +443,9 @@ class Matrix3D {
         )
     }
 
-    fun setToOrtho(rect: Rectangle, near: Double = 0.0, far: Double = 1.0): Matrix3D = setToOrtho(rect.left, rect.right, rect.bottom, rect.top, near, far)
-    fun setToOrtho(rect: Rectangle, near: Float = 0f, far: Float = 1f): Matrix3D = setToOrtho(rect.left, rect.right, rect.bottom, rect.top, near.toDouble(), far.toDouble())
-    fun setToOrtho(rect: Rectangle, near: Int = 0, far: Int = 1): Matrix3D = setToOrtho(rect.left, rect.right, rect.bottom, rect.top, near.toDouble(), far.toDouble())
-    fun setToOrtho(left: Double, right: Double, bottom: Double, top: Double, near: Double, far: Double): Matrix3D =
-        setToOrtho(left.toFloat(), right.toFloat(), bottom.toFloat(), top.toFloat(), near.toFloat(), far.toFloat())
-    fun setToOrtho(left: Int, right: Int, bottom: Int, top: Int, near: Int, far: Int): Matrix3D =
-        setToOrtho(left.toFloat(), right.toFloat(), bottom.toFloat(), top.toFloat(), near.toFloat(), far.toFloat())
+    fun setToOrtho(rect: Rectangle, near: Float = 0f, far: Float = 1f): Unit = setToOrtho(rect.left, rect.right, rect.bottom, rect.top, near, far)
 
-    fun setToFrustum(left: Float, right: Float, bottom: Float, top: Float, zNear: Float = 0f, zFar: Float = 1f): Matrix3D {
+    fun setToFrustum(left: Float, right: Float, bottom: Float, top: Float, zNear: Float = 0f, zFar: Float = 1f): Unit {
         if (zNear <= 0.0f || zFar <= zNear) {
             throw Exception("Error: Required zNear > 0 and zFar > zNear, but zNear $zNear, zFar $zFar")
         }
@@ -462,35 +462,24 @@ class Matrix3D {
         val C = -1.0f * (zFar + zNear) / dz
         val D = -2.0f * (zFar * zNear) / dz
 
-        return setRows(
+        setRows(
             zNear2 / dx, 0f, A, 0f,
             0f, zNear2 / dy, B, 0f,
             0f, 0f, C, D,
             0f, 0f, -1f, 0f
         )
     }
-    fun setToFrustum(rect: Rectangle, zNear: Double = 0.0, zFar: Double = 1.0): Matrix3D = setToFrustum(rect.left, rect.right, rect.bottom, rect.top, zNear.toDouble(), zFar.toDouble())
-    fun setToFrustum(rect: Rectangle, zNear: Float = 0f, zFar: Float = 1f): Matrix3D = setToFrustum(rect.left, rect.right, rect.bottom, rect.top, zNear.toDouble(), zFar.toDouble())
-    fun setToFrustum(rect: Rectangle, zNear: Int = 0, zFar: Int = 1): Matrix3D = setToFrustum(rect.left, rect.right, rect.bottom, rect.top, zNear.toDouble(), zFar.toDouble())
+    fun setToFrustum(rect: Rectangle, zNear: Float = 0f, zFar: Float = 1f): Unit = setToFrustum(rect.left, rect.right, rect.bottom, rect.top, zNear, zFar)
 
-    fun setToFrustum(left: Double, right: Double, bottom: Double, top: Double, zNear: Double = 0.0, zFar: Double = 1.0): Matrix3D
-        = setToFrustum(left.toFloat(), right.toFloat(), bottom.toFloat(), top.toFloat(), zNear.toFloat(), zFar.toFloat())
-    fun setToFrustum(left: Int, right: Int, bottom: Int, top: Int, zNear: Int = 0, zFar: Int = 1): Matrix3D
-        = setToFrustum(left.toFloat(), right.toFloat(), bottom.toFloat(), top.toFloat(), zNear.toFloat(), zFar.toFloat())
-
-
-    fun setToPerspective(fovy: Angle, aspect: Float, zNear: Float, zFar: Float): Matrix3D {
+    fun setToPerspective(fovy: Angle, aspect: Float, zNear: Float, zFar: Float) {
         val top = tan(fovy.radians / 2f) * zNear
         val bottom = -1.0f * top
         val left = aspect * bottom
         val right = aspect * top
-        return setToFrustum(left.toFloat(), right.toFloat(), bottom.toFloat(), top.toFloat(), zNear, zFar)
+        setToFrustum(left, right, bottom, top, zNear, zFar)
     }
-    fun setToPerspective(fovy: Angle, aspect: Double, zNear: Double, zFar: Double): Matrix3D
-        = setToPerspective(fovy, aspect.toFloat(), zNear.toFloat(), zFar.toFloat())
 
-
-    override fun equals(other: Any?): Boolean = (other is Matrix3D) && this.data.contentEquals(other.data)
+    override fun equals(other: Any?): Boolean = (other is Matrix3D) && data.contentEquals(other.data)
     override fun hashCode(): Int = data.contentHashCode()
 
     override fun toString(): String = buildString {
@@ -788,27 +777,18 @@ fun Matrix3D.multiply(scale: Int, l: Matrix3D = this) = multiply(scale.toFloat()
 @ThreadLocal
 internal val tempMat3D = Matrix3D()
 
-fun Matrix3D.translate(x: Float, y: Float, z: Float, w: Float = 1f, temp: Matrix3D = tempMat3D) = this.apply {
-    temp.setToTranslation(x, y, z, w)
+fun Matrix3D.translate(x: Float, y: Float, z: Float, temp: Matrix3D = tempMat3D) = this.apply {
+    temp.setToTranslation(x, y, z)
     this.multiply(this, temp)
 }
-fun Matrix3D.translate(x: Double, y: Double, z: Double, w: Double = 1.0, temp: Matrix3D = tempMat3D) = this.translate(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat(), temp)
-fun Matrix3D.translate(x: Int, y: Int, z: Int, w: Int = 1, temp: Matrix3D = tempMat3D) = this.translate(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat(), temp)
-
 fun Matrix3D.rotate(angle: Angle, x: Float, y: Float, z: Float, temp: Matrix3D = tempMat3D) = this.apply {
     temp.setToRotation(angle, x, y, z)
     this.multiply(this, temp)
 }
-fun Matrix3D.rotate(angle: Angle, x: Double, y: Double, z: Double, temp: Matrix3D = tempMat3D) = this.rotate(angle, x.toFloat(), y.toFloat(), z.toFloat(), temp)
-fun Matrix3D.rotate(angle: Angle, x: Int, y: Int, z: Int, temp: Matrix3D = tempMat3D) = this.rotate(angle, x.toFloat(), y.toFloat(), z.toFloat(), temp)
-
-fun Matrix3D.scale(x: Float, y: Float, z: Float, w: Float = 1f, temp: Matrix3D = tempMat3D) = this.apply {
-    temp.setToScale(x, y, z, w)
+fun Matrix3D.scale(x: Float, y: Float, z: Float, temp: Matrix3D = tempMat3D) = this.apply {
+    temp.setToScale(x, y, z)
     this.multiply(this, temp)
 }
-
-fun Matrix3D.scale(x: Double, y: Double, z: Double, w: Double = 1.0, temp: Matrix3D = tempMat3D) = this.scale(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat(), temp)
-fun Matrix3D.scale(x: Int, y: Int, z: Int, w: Int = 1, temp: Matrix3D = tempMat3D) = this.scale(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat(), temp)
 
 fun Matrix3D.setToRotation(quat: Quaternion, temp: Matrix3D = tempMat3D) = this.apply {
     quat.toMatrix(temp)
@@ -832,30 +812,25 @@ fun Matrix3D.rotate(quat: Quaternion, temp: Matrix3D = tempMat3D) = this.apply {
     this.multiply(this, temp)
 }
 
-private val tempVec1 = Vector3D()
-private val tempVec2 = Vector3D()
-private val tempVec3 = Vector3D()
-
 fun Matrix3D.setToLookAt(
     eye: Vector3D,
     target: Vector3D,
     up: Vector3D
 ): Matrix3D {
-    val z = tempVec1.sub(eye, target)
-    if (z.length3Squared == 0f) z.z = 1f
-    z.normalize()
-    val x = tempVec2.cross(up, z)
-    if (x.length3Squared == 0f) {
+    val z = (eye - target)
+    z.normalizeSafely()
+    val x = up * z
+    if (x.lengthSquared == 0f) {
         when {
             abs(up.z) == 1f -> z.x += 0.0001f
             else -> z.z += 0.0001f
         }
         z.normalize()
-        x.cross(up, z)
+        x.setToCross(up, z)
     }
     x.normalize()
-    val y = tempVec3.cross(z, x)
-    return this.setRows(
+    val y = z * x
+    return setRows(
         x.x, y.x, z.x, 0f,
         x.y, y.y, z.y, 0f,
         x.z, y.z, z.z, 0f,
@@ -863,9 +838,9 @@ fun Matrix3D.setToLookAt(
     )
 }
 
-inline fun Matrix3D.translate(v: Vector3D, temp: Matrix3D = tempMat3D) = translate(v.x, v.y, v.z, v.w, temp)
+inline fun Matrix3D.translate(v: Vector3D, temp: Matrix3D = tempMat3D) = translate(v.x, v.y, v.z, temp)
 inline fun Matrix3D.rotate(angle: Angle, v: Vector3D, temp: Matrix3D = tempMat3D) = rotate(angle, v.x, v.y, v.z, temp)
-inline fun Matrix3D.scale(v: Vector3D, temp: Matrix3D = tempMat3D) = scale(v.x, v.y, v.z, v.w, temp)
+inline fun Matrix3D.scale(v: Vector3D, temp: Matrix3D = tempMat3D) = scale(v.x, v.y, v.z, temp)
 
 fun Matrix3D.setTRS(translation: Position3D, rotation: Quaternion, scale: Scale3D): Matrix3D {
     val rx = rotation.x.toFloat()
@@ -901,8 +876,8 @@ private val tempMat1 = Matrix3D()
 
 fun Matrix3D.getTRS(position: Position3D, rotation: Quaternion, scale: Scale3D): Matrix3D = this.apply {
     val det = determinant
-    position.setTo(v03, v13, v23, 1f)
-    scale.setTo(Vector3D.length(v00, v10, v20) * det.sign, Vector3D.length(v01, v11, v21), Vector3D.length(v02, v12, v22), 1f)
+    position.setTo(v03, v13, v23)
+    scale.setTo(vectorLength(v00, v10, v20) * det.sign, vectorLength(v01, v11, v21), vectorLength(v02, v12, v22))
     val invSX = 1f / scale.x
     val invSY = 1f / scale.y
     val invSZ = 1f / scale.z
@@ -962,7 +937,7 @@ inline fun Matrix3D.setToMap(filter: (Float) -> Float) = setRows(
     filter(v30), filter(v31), filter(v32), filter(v33)
 )
 
-fun Matrix3D.setToInterpolated(a: Matrix3D, b: Matrix3D, ratio: Double) = setColumns(
+fun Matrix3D.setToInterpolated(a: Matrix3D, b: Matrix3D, ratio: Float) = setColumns(
     ratio.interpolate(a.v00, b.v00), ratio.interpolate(a.v10, b.v10), ratio.interpolate(a.v20, b.v20), ratio.interpolate(a.v30, b.v30),
     ratio.interpolate(a.v01, b.v01), ratio.interpolate(a.v11, b.v11), ratio.interpolate(a.v21, b.v21), ratio.interpolate(a.v31, b.v31),
     ratio.interpolate(a.v02, b.v02), ratio.interpolate(a.v12, b.v12), ratio.interpolate(a.v22, b.v22), ratio.interpolate(a.v32, b.v32),

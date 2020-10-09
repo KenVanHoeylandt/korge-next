@@ -27,12 +27,12 @@ class Edge {
         fun areParallel(a: Edge, b: Edge) = ((a.by - a.ay) * (b.ax - b.bx)) - ((b.by - b.ay) * (a.ax - a.bx)) == 0
 
         fun getIntersectXY(a: Edge, b: Edge, out: Point = Point()): Point? {
-            getIntersectXY(a, b) { x, y -> return out.setTo(x, y) }
+            getIntersectXY(a, b) { x, y -> return out.apply { setTo(x, y) } }
             return null
         }
 
         fun getIntersectXYInt(a: Edge, b: Edge, out: PointInt = PointInt()): PointInt? {
-            getIntersectXY(a, b) { x, y -> return out.setTo(x.toInt(), y.toInt()) }
+            getIntersectXY(a, b) { x, y -> return out.apply { setTo(x.toInt(), y.toInt()) } }
             return null
         }
 
@@ -41,19 +41,19 @@ class Edge {
         }
 
         // https://www.geeksforgeeks.org/program-for-point-of-intersection-of-two-lines/
-        inline fun getIntersectXY(a: Edge, b: Edge, out: (x: Double, y: Double) -> Unit): Boolean {
-            val Ax: Double = a.ax.toDouble()
-            val Ay: Double = a.ay.toDouble()
-            val Bx: Double = a.bx.toDouble()
-            val By: Double = a.by.toDouble()
-            val Cx: Double = b.ax.toDouble()
-            val Cy: Double = b.ay.toDouble()
-            val Dx: Double = b.bx.toDouble()
-            val Dy: Double = b.by.toDouble()
+        inline fun getIntersectXY(a: Edge, b: Edge, out: (x: Float, y: Float) -> Unit): Boolean {
+            val Ax: Float = a.ax.toFloat()
+            val Ay: Float = a.ay.toFloat()
+            val Bx: Float = a.bx.toFloat()
+            val By: Float = a.by.toFloat()
+            val Cx: Float = b.ax.toFloat()
+            val Cy: Float = b.ay.toFloat()
+            val Dx: Float = b.bx.toFloat()
+            val Dy: Float = b.by.toFloat()
             return getIntersectXY(Ax, Ay, Bx, By, Cx, Cy, Dx, Dy) { x, y -> out(floorCeil(x), floorCeil(y)) }
         }
 
-        inline fun getIntersectXY(Ax: Double, Ay: Double, Bx: Double, By: Double, Cx: Double, Cy: Double, Dx: Double, Dy: Double, out: (x: Double, y: Double) -> Unit): Boolean {
+        inline fun getIntersectXY(Ax: Float, Ay: Float, Bx: Float, By: Float, Cx: Float, Cy: Float, Dx: Float, Dy: Float, out: (x: Float, y: Float) -> Unit): Boolean {
             val a1 = By - Ay
             val b1 = Ax - Bx
             val c1 = a1 * (Ax) + b1 * (Ay)
@@ -61,7 +61,7 @@ class Edge {
             val b2 = Cx - Dx
             val c2 = a2 * (Cx) + b2 * (Cy)
             val determinant = a1 * b2 - a2 * b1
-            if (determinant == 0.0) return false
+            if (determinant == 0f) return false
             val x = (b2 * c1 - b1 * c2) / determinant
             val y = (a1 * c2 - a2 * c1) / determinant
             out(x, y)
@@ -121,7 +121,7 @@ class Edge {
     //fun intersectX(y: Double): Double = if (isCoplanarY) ax else ((y - h) * this.dx) / this.dy
 
     // Stroke extensions
-    val angle get() = Angle.between(ax, ay, bx, by)
+    val angle get() = Angle.between(ax.toFloat(), ay.toFloat(), bx.toFloat(), by.toFloat())
     val cos get() = angle.cosine
     val absCos get() = cos.absoluteValue
     val sin get() = angle.sine

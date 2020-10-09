@@ -69,8 +69,8 @@ class Cube3D(var width: Double, var height: Double, var depth: Double) : ViewWit
             vector3DTemps {
                 fun face(pos: Vector3D) {
                     val dims = (0 until 3).filter { pos[it] == 0f }
-                    val normal = Vector3D().setToFunc { if (pos[it] != 0f) 1f else 0f }
-                    val dirs = Array(2) { dim -> Vector3D().setToFunc { if (it == dims[dim]) .5f else 0f } }
+                    val normal = Vector3D().setTo { if (pos[it] != 0f) 1f else 0f }
+                    val dirs = Array(2) { dim -> Vector3D().setTo { if (it == dims[dim]) .5f else 0f } }
                     val dx = dirs[0]
                     val dy = dirs[1]
 

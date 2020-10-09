@@ -52,7 +52,7 @@ class StrokeToFill {
         val rjoin = if (forcedMiter) LineJoin.MITER else join
         when (rjoin) {
             LineJoin.MITER -> {
-                val intersection2 = tempP1.setTo(mainPrev.bx, mainPrev.by)
+                val intersection2 = tempP1.apply { setTo(mainPrev.bx.toFloat(), mainPrev.by.toFloat()) }
                 val intersection = Edge.getIntersectXY(prev, curr, tempP3)
                 if (intersection != null) {
                     val dist = Point.distance(intersection, intersection2)
@@ -71,9 +71,9 @@ class StrokeToFill {
             LineJoin.ROUND -> {
                 val i = Edge.getIntersectXY(prev, curr, tempP3)
                 if (i != null) {
-                    val count = (Point.distance(prev.bx, prev.by, curr.ax, curr.ay) * scale).toInt().clamp(4, 64)
+                    val count = (Point.distance(prev.bx.toFloat(), prev.by.toFloat(), curr.ax.toFloat(), curr.ay.toFloat()) * scale).toInt().clamp(4, 64)
                     for (n in 0..count) {
-                        out.add(Bezier.quadCalc(prev.bx.toDouble(), prev.by.toDouble(), i.x, i.y, curr.ax.toDouble(), curr.ay.toDouble(), n.toDouble() / count, tempP2))
+                        out.add(Bezier.quadCalc(prev.bx.toFloat(), prev.by.toFloat(), i.x, i.y, curr.ax.toFloat(), curr.ay.toFloat(), n.toFloat() / count, tempP2))
                     }
                 } else {
                     out.addEdgePointB(prev)
@@ -95,8 +95,8 @@ class StrokeToFill {
                 r.add(rx, ry)
             }
             LineCap.ROUND, LineCap.SQUARE -> {
-                val ax = (angle.cosine * weight / 2).toInt()
-                val ay = (angle.sine * weight / 2).toInt()
+                val ax = (angle.cosine * weight / 2f).toInt()
+                val ay = (angle.sine * weight / 2f).toInt()
                 val lx2 = lx + ax
                 val ly2 = ly + ay
                 val rx2 = rx + ax
@@ -105,17 +105,17 @@ class StrokeToFill {
                     l.add(lx2, ly2)
                     r.add(rx2, ry2)
                 } else {
-                    val count = (Point.distance(lx, ly, rx, ry) * scale).toInt().clamp(4, 64)
+                    val count = (Point.distance(lx.toFloat(), ly.toFloat(), rx.toFloat(), ry.toFloat()) * scale).toInt().clamp(4, 64)
                     l.add(lx, ly)
                     for (n in 0 .. count) {
                         val m = if (epoint == EdgePoint.A) n else count - n
-                        val ratio = m.toDouble() / count
+                        val ratio = m.toFloat() / count
                         r.add(
                             Bezier.cubicCalc(
-                            lx.toDouble(), ly.toDouble(),
-                            lx2.toDouble(), ly2.toDouble(),
-                            rx2.toDouble(), ry2.toDouble(),
-                            rx.toDouble(), ry.toDouble(),
+                            lx.toFloat(), ly.toFloat(),
+                            lx2.toFloat(), ly2.toFloat(),
+                            rx2.toFloat(), ry2.toFloat(),
+                            rx.toFloat(), ry.toFloat(),
                             ratio,
                             tempP2
                         ))

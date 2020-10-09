@@ -2,15 +2,15 @@ package com.soywiz.korma.geom.binpack
 
 import com.soywiz.korma.geom.*
 
-class BinPacker(val width: Double, val height: Double, val algo: Algo = MaxRects(width, height)) {
+class BinPacker(val width: Float, val height: Float, val algo: Algo = MaxRects(width, height)) {
     interface Algo {
-        fun add(width: Double, height: Double): Rectangle?
+        fun add(width: Float, height: Float): Rectangle?
     }
 
-    class Result<T>(val maxWidth: Double, val maxHeight: Double, val items: List<Pair<T, Rectangle?>>) {
+    class Result<T>(val maxWidth: Float, val maxHeight: Float, val items: List<Pair<T, Rectangle?>>) {
         private val rectanglesNotNull = items.map { it.second }.filterNotNull()
-        val width: Double = rectanglesNotNull.map { it.right }.max() ?: 0.0
-        val height: Double = rectanglesNotNull.map { it.bottom }.max() ?: 0.0
+        val width: Float = rectanglesNotNull.map { it.right }.max() ?: 0f
+        val height: Float = rectanglesNotNull.map { it.bottom }.max() ?: 0f
         val rects: List<Rectangle?> get() = items.map { it.second }
         val rectsStr: String get() = rects.toString()
     }
@@ -25,20 +25,14 @@ class BinPacker(val width: Double, val height: Double, val algo: Algo = MaxRects
         return its.map { it to out[it] }
     }
 
-    fun add(width: Double, height: Double): Rectangle = addOrNull(width, height)
+    fun add(width: Float, height: Float): Rectangle = addOrNull(width, height)
         ?: throw IllegalStateException("Size '${this.width}x${this.height}' doesn't fit in '${this.width}x${this.height}'")
-    fun add(width: Int, height: Int): Rectangle = add(width.toDouble(), height.toDouble())
-    fun add(width: Float, height: Float): Rectangle = add(width.toDouble(), height.toDouble())
 
-    fun addOrNull(width: Double, height: Double): Rectangle? {
+    fun addOrNull(width: Float, height: Float): Rectangle? {
         val rect = algo.add(width, height) ?: return null
         allocated += rect
         return rect
     }
-
-
-    fun addOrNull(width: Int, height: Int): Rectangle? = addOrNull(width.toDouble(), height.toDouble())
-    fun addOrNull(width: Float, height: Float): Rectangle? = addOrNull(width.toDouble(), height.toDouble())
 
     fun <T> addBatch(items: Iterable<T>, getSize: (T) -> Size): Result<T> {
         return Result(width, height, algo.addBatch(items, getSize))
@@ -47,17 +41,13 @@ class BinPacker(val width: Double, val height: Double, val algo: Algo = MaxRects
     fun addBatch(items: Iterable<Size>): List<Rectangle?> = algo.addBatch(items) { it }.map { it.second }
 
     companion object {
-        operator fun invoke(width: Double, height: Double, algo: Algo = MaxRects(width, height)) = BinPacker(width, height, algo)
-        operator fun invoke(width: Int, height: Int, algo: Algo = MaxRects(width.toDouble(), height.toDouble())) = BinPacker(width.toDouble(), height.toDouble(), algo)
-        operator fun invoke(width: Float, height: Float, algo: Algo = MaxRects(width.toDouble(), height.toDouble())) = BinPacker(width.toDouble(), height.toDouble(), algo)
+        operator fun invoke(width: Float, height: Float, algo: Algo = MaxRects(width, height)) = BinPacker(width, height, algo)
 
-        fun <T> pack(width: Double, height: Double, items: Iterable<T>, getSize: (T) -> Size): Result<T> = BinPacker(width, height).addBatch(items, getSize)
-        fun <T> pack(width: Int, height: Int, items: Iterable<T>, getSize: (T) -> Size): Result<T> = pack(width.toDouble(), height.toDouble(), items, getSize)
-        fun <T> pack(width: Float, height: Float, items: Iterable<T>, getSize: (T) -> Size): Result<T> = pack(width.toDouble(), height.toDouble(), items, getSize)
+        fun <T> pack(width: Float, height: Float, items: Iterable<T>, getSize: (T) -> Size): Result<T> = BinPacker(width, height).addBatch(items, getSize)
 
         fun <T> packSeveral(
-            maxWidth: Double,
-            maxHeight: Double,
+            maxWidth: Float,
+            maxHeight: Float,
             items: Iterable<T>,
             getSize: (T) -> Size
         ): List<Result<T>> {
@@ -108,8 +98,5 @@ class BinPacker(val width: Double, val height: Double, val algo: Algo = MaxRects
 
             return out
         }
-        fun <T : Sizeable> packSeveral(maxWidth: Int, maxHeight: Int, items: Iterable<T>): List<Result<T>> = packSeveral(maxWidth.toDouble(), maxHeight.toDouble(), items) { it.size }
-        fun <T : Sizeable> packSeveral(maxWidth: Float, maxHeight: Float, items: Iterable<T>): List<Result<T>> = packSeveral(maxWidth.toDouble(), maxHeight.toDouble(), items) { it.size }
-
     }
 }

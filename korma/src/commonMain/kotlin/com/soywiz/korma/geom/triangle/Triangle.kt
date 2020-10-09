@@ -11,11 +11,11 @@ interface Triangle {
     data class Base(override val p0: IPoint, override val p1: IPoint, override val p2: IPoint) : Triangle
 
     companion object {
-        private const val EPSILON: Double = 1e-12
+        private const val EPSILON: Float = 1e-12.toFloat()
 
-        fun area(p1: IPoint, p2: IPoint, p3: IPoint): Double = area(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y)
+        fun area(p1: IPoint, p2: IPoint, p3: IPoint): Float = area(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y)
 
-        fun area(ax: Double, ay: Double, bx: Double, by: Double, cx: Double, cy: Double): Double {
+        fun area(ax: Float, ay: Float, bx: Float, by: Float, cx: Float, cy: Float): Float {
             val a = bx - ax
             val b = by - ay
             val c = cx - ax
@@ -130,7 +130,7 @@ fun Triangle.containsEdge(edge: Edge): Boolean = containsEdgePoints(edge.p, edge
 // In a triangle to check if contains and edge is enough to check if it contains the two vertices.
 fun Triangle.containsEdgePoints(p1: IPoint, p2: IPoint): Boolean = containsPoint(p1) && containsPoint(p2)
 
-private fun _product(p1: IPoint, p2: IPoint, p3: IPoint): Double = (p1.x - p3.x) * (p2.y - p3.y) - (p1.y - p3.y) * (p2.x - p3.x)
+private fun _product(p1: IPoint, p2: IPoint, p3: IPoint): Float = (p1.x - p3.x) * (p2.y - p3.y) - (p1.y - p3.y) * (p2.x - p3.x)
 
 fun Triangle.pointInsideTriangle(pp: IPoint): Boolean {
     val sign0 = _product(p0, p1, p2)
@@ -179,7 +179,7 @@ fun Triangle(p0: IPoint, p1: IPoint, p2: IPoint, fixOrientation: Boolean = false
     return Triangle.Base(p0, p1, p2)
 }
 
-val Triangle.area: Double get() = Triangle.area(p0, p1, p2)
+val Triangle.area: Float get() = Triangle.area(p0, p1, p2)
 
 /** Alias for getPointIndexOffset */
 fun Triangle.index(p: IPoint): Int = this.getPointIndexOffsetNoThrow(p, 0, -1)

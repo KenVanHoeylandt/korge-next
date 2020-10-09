@@ -75,7 +75,7 @@ abstract class Camera3D : View3D() {
     private val worldUp = Vector3D(0f, 1f, 0f)
     private val up = Vector3D(0f, 1f, 0f)
     private val temp = Vector3D()
-    private val right = Vector3D().cross(front, up).normalize()
+    private val right = Vector3D().setToCross(front, up).normalize()
 
 
     init {
@@ -88,7 +88,7 @@ abstract class Camera3D : View3D() {
         val fz = yaw.sine * pitch.cosine
         front.setTo(fx, fy, fz).normalize()
         right.cross(front, worldUp).normalize()
-        up.cross(right, front).normalize()
+        up.setToCross(right, front).normalize()
         val tx = position.x + front.x
         val ty = position.y + front.y
         val tz = position.z + front.z

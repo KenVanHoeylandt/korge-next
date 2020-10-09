@@ -24,10 +24,10 @@ operator fun Random.get(min: Float, max: Float): Float = min + nextFloat() * (ma
 operator fun Random.get(min: Int, max: Int): Int = min + nextInt(max - min)
 operator fun Random.get(range: IntRange): Int = range.start + this.nextInt(range.endInclusive - range.start + 1)
 operator fun Random.get(range: LongRange): Long = range.start + this.nextLong() % (range.endInclusive - range.start + 1)
-operator fun <T : Interpolable<T>> Random.get(l: T, r: T): T = (this.nextInt(0x10001).toDouble() / 0x10000.toDouble()).interpolate(l, r)
+//operator fun <T : Interpolable<T>> Random.get(l: T, r: T): T = (this.nextInt(0x10001).toFloat() / 0x10000.toFloat()).interpolate(l, r)
 operator fun <T> Random.get(list: List<T>): T = list[this[list.indices]]
 operator fun Random.get(rectangle: Rectangle): IPoint = IPoint(this[rectangle.left, rectangle.right], this[rectangle.top, rectangle.bottom])
-fun <T : MutableInterpolable<T>> T.setToRandom(min: T, max: T, random: Random = Random) = run { this.setToInterpolated(random.nextDouble(), min, max) }
+fun <T : MutableInterpolable<T>> T.setToRandom(min: T, max: T, random: Random = Random) = run { this.setToInterpolated(random.nextFloat(), min, max) }
 
 fun <T> Random.weighted(weights: Map<T, Double>): T = shuffledWeighted(weights).first()
 fun <T> Random.weighted(weights: RandomWeights<T>): T = shuffledWeighted(weights).first()
@@ -35,8 +35,8 @@ fun <T> Random.weighted(weights: RandomWeights<T>): T = shuffledWeighted(weights
 fun <T> Random.shuffledWeighted(weights: Map<T, Double>): List<T> = shuffledWeighted(RandomWeights(weights))
 fun <T> Random.shuffledWeighted(values: List<T>, weights: List<Double>): List<T> = shuffledWeighted(RandomWeights(values, weights))
 fun <T> Random.shuffledWeighted(weights: RandomWeights<T>): List<T> {
-    val randoms = (0 until weights.items.size).map { -(nextDouble().pow(1.0 / weights.normalizedWeights[it])) }
-    val sortedIndices = (0 until weights.items.size).sortedWith(Comparator { a, b -> randoms[a].compareTo(randoms[b]) })
+    val randoms = weights.items.indices.map { -(nextDouble().pow(1.0 / weights.normalizedWeights[it])) }
+    val sortedIndices = weights.items.indices.sortedWith(Comparator { a, b -> randoms[a].compareTo(randoms[b]) })
     return sortedIndices.map { weights.items[it] }
 }
 

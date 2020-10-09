@@ -24,7 +24,7 @@ open class RastScale {
     val sscale get() = RAST_FIXED_SCALE
     val hscale get() = RAST_FIXED_SCALE_HALF
 
-    val Double.s: Int get() = ((this * sscale).toInt() + hscale)
+    val Float.s: Int get() = ((this * sscale).toInt() + hscale)
     //@PublishedApi
     //internal val Int.us: Double get() = (this.toDouble() - RAST_FIXED_SCALE_HALF) * scale / RAST_FIXED_SCALE
     //@PublishedApi
@@ -37,7 +37,23 @@ open class RastScale {
 class PolygonScanline : RastScale() {
     var version = 0
     var winding = Winding.NON_ZERO
+    var moveToX = 0f
+    var moveToY = 0f
+    var lastX = 0f
+    var lastY = 0f
+    val edgesSize get() = edges.size
+    var lastMoveTo = false
     private val boundsBuilder = BoundsBuilder()
+    private val tempXW = XWithWind()
+    var edgesChecked = 0
+    private val edgesPool = Pool { Edge() }
+    @PublishedApi
+    internal val edges = arrayListOf<Edge>()
+    private val buckets = AllBuckets()
+    @PublishedApi
+    internal val points = PointArrayList()
+    private var closed = true
+    private val ss = IntSegmentSet()
 
     class Bucket {
         val edges = arrayListOf<Edge>()
@@ -99,15 +115,8 @@ class PolygonScanline : RastScale() {
         }
     }
 
-    private val edgesPool = Pool { Edge() }
-
-    @PublishedApi
-    internal val edges = arrayListOf<Edge>()
-    private val buckets = AllBuckets()
-
     fun getBounds(out: Rectangle = Rectangle()) = boundsBuilder.getBounds(out)
 
-    private var closed = true
     fun reset() {
         closed = true
         boundsBuilder.reset()
@@ -115,27 +124,24 @@ class PolygonScanline : RastScale() {
         edges.clear()
         points.clear()
         buckets.clear()
-        moveToX = 0.0
-        moveToY = 0.0
-        lastX = 0.0
-        lastY = 0.0
+        moveToX = 0f
+        moveToY = 0f
+        lastX = 0f
+        lastY = 0f
         lastMoveTo = false
     }
 
-    @PublishedApi
-    internal val points = PointArrayList()
-
-    private fun addPoint(x: Double, y: Double) {
+    private fun addPoint(x: Float, y: Float) {
         points.add(x, y)
     }
 
-    inline fun forEachPoint(callback: (x: Double, y: Double) -> Unit) {
+    inline fun forEachPoint(callback: (x: Float, y: Float) -> Unit) {
         points.fastForEach { x, y ->
             callback(x, y)
         }
     }
 
-    private fun addEdge(ax: Double, ay: Double, bx: Double, by: Double) {
+    private fun addEdge(ax: Float, ay: Float, bx: Float, by: Float) {
         if (ax == bx && ay == by) return
         if (ay == by) return // Do not add coplanar to X edges
         val iax = ax.s
@@ -150,15 +156,9 @@ class PolygonScanline : RastScale() {
         boundsBuilder.add(bx, by)
     }
 
-    var moveToX = 0.0
-    var moveToY = 0.0
-    var lastX = 0.0
-    var lastY = 0.0
-    val edgesSize get() = edges.size
     fun isNotEmpty() = edgesSize > 0
 
-    var lastMoveTo = false
-    fun moveTo(x: Double, y: Double) {
+    fun moveTo(x: Float, y: Float) {
         lastX = x
         lastY = y
         moveToX = x
@@ -166,7 +166,7 @@ class PolygonScanline : RastScale() {
         lastMoveTo = true
     }
 
-    fun lineTo(x: Double, y: Double) {
+    fun lineTo(x: Float, y: Float) {
         if (lastMoveTo) {
             addPoint(lastX, lastY)
         }
@@ -181,9 +181,9 @@ class PolygonScanline : RastScale() {
         path.emitPoints2(flush = { if (it) close() }, emit = { x, y, move -> add(x, y, move) })
     }
 
-    fun add(x: Double, y: Double, move: Boolean) = if (move) moveTo(x, y) else lineTo(x, y)
-    fun add(x: Float, y: Float, move: Boolean) = add(x.toDouble(), y.toDouble(), move)
-    fun add(x: Int, y: Int, move: Boolean) = add(x.toDouble(), y.toDouble(), move)
+    fun add(x: Float, y: Float, move: Boolean) = if (move) moveTo(x, y) else lineTo(x, y)
+    fun add(x: Double, y: Double, move: Boolean) = add(x.toFloat(), y.toFloat(), move)
+    fun add(x: Int, y: Int, move: Boolean) = add(x.toFloat(), y.toFloat(), move)
 
     internal inline fun forEachActiveEdgeAtY(y: Int, block: (Edge) -> Unit): Int {
         var edgesChecked = 0
@@ -200,9 +200,6 @@ class PolygonScanline : RastScale() {
         lineTo(moveToX, moveToY)
     }
 
-    private val tempXW = XWithWind()
-
-    var edgesChecked = 0
     fun scanline(y: Int, winding: Winding, out: IntSegmentSet = IntSegmentSet()): IntSegmentSet {
         edgesChecked = 0
 
@@ -268,13 +265,13 @@ class PolygonScanline : RastScale() {
         return out
     }
 
-    private val ss = IntSegmentSet()
-
-    fun containsPoint(x: Double, y: Double, winding: Winding = this.winding): Boolean {
-        return containsPointInt(x.s, y.s, winding)
+    fun containsPoint(x: Float, y: Float, winding: Winding = this.winding): Boolean {
+        return containsPoint(x.s, y.s, winding)
     }
 
-    fun containsPointInt(x: Int, y: Int, winding: Winding = this.winding): Boolean {
+    fun containsPoint(x: Double, y: Double, winding: Winding = this.winding) = containsPoint(x.toFloat(), y.toFloat(), winding)
+
+    fun containsPoint(x: Int, y: Int, winding: Winding = this.winding): Boolean {
         val ss = this.ss
         scanline(y, winding, ss.clear())
         return ss.contains(x)
