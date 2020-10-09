@@ -55,6 +55,8 @@ inline class Angle(val radians: Float) : Comparable<Angle> {
             val angle = atan2(y1 - y0, x1 - x0)
             return if (angle < 0) Angle(angle + PI2) else Angle(angle)
         }
+
+        fun between(l: IPoint, r: IPoint) = between(l.x, l.y, r.x, r.y)
     }
 
     override fun compareTo(other: Angle): Int = this.radians.compareTo(other.radians)

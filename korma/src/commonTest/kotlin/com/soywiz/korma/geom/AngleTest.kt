@@ -56,10 +56,10 @@ class AngleTest {
         assertEquals(180.degrees, Angle.between(Point(0, 0), Point(-10, 0)))
         assertEquals(270.degrees, Angle.between(Point(0, 0), Point(0, -10)))
 
-        assertEquals(0.degrees, Angle.between(100, 100, 110, 100))
-        assertEquals(90.degrees, Angle.between(100, 100, 100, 110))
-        assertEquals(180.degrees, Angle.between(100, 100, -110, 100))
-        assertEquals(270.degrees, Angle.between(100, 100, 100, -110))
+        assertEquals(0.degrees, Angle.between(100f, 100f, 110f, 100f))
+        assertEquals(90.degrees, Angle.between(100f, 100f, 100f, 110f))
+        assertEquals(180.degrees, Angle.between(100f, 100f, -110f, 100f))
+        assertEquals(270.degrees, Angle.between(100f, 100f, 100f, -110f))
     }
 
     @Test

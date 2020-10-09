@@ -34,7 +34,7 @@ class Vector3DTest {
         val v = Vector3D(0,0,0)
         v.setToAdd(v, Vector3D(1,0,0))
         assertEquals(Vector3D(1, 0, 0), v)
-        v.scale(5)
+        v.scale(5f)
         assertEquals(Vector3D(5, 0 ,0), v)
         v.setToSub(v, Vector3D(2, 1, 0))
         assertEquals(Vector3D(3, -1, 0), v)
@@ -63,7 +63,7 @@ class Vector3DTest {
     @Test
     fun selfAssignMultiplicationWithOperatorFloat() {
         val vector = Vector3D(1.0f, 2.0f, 3.0f)
-        val original = Vector3D().copyFrom(vector)
+        val original = vector.copy()
         val number = 2.0f
 
         vector *= number
@@ -86,7 +86,7 @@ class Vector3DTest {
     @Test
     fun selfAssignDivisionOperatorWithFloat() {
         val vector = Vector3D(1.0f, 2.0f, 3.0f)
-        val original = Vector3D().copyFrom(vector)
+        val original = vector.copy()
         val number = 2.0f
 
         vector /= number
@@ -109,7 +109,7 @@ class Vector3DTest {
     @Test
     fun selfAssignAdditionOperatorWithVector() {
         val first = Vector3D(1.0f, 2.0f, 3.0f)
-        val firstOriginal = Vector3D().copyFrom(first)
+        val firstOriginal = first.copy()
         val second = Vector3D(4.0f, 5.0f, 6.0f)
 
         first += second
@@ -132,7 +132,7 @@ class Vector3DTest {
     @Test
     fun selfAssignSubtractionOperatorWithVector() {
         val first = Vector3D(1.0f, 2.0f, 3.0f)
-        val firstOriginal = Vector3D().copyFrom(first)
+        val firstOriginal = first.copy()
         val second = Vector3D(4.0f, 5.0f, 6.0f)
 
         first -= second
